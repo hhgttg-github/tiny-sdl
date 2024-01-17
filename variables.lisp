@@ -1,0 +1,2 @@
+
+(defparameter *quit-game* nil)
