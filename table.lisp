@@ -144,7 +144,7 @@
     (unless (emptyp *current-prompt*)
       (clear-prompt-box)
       (draw-prompt-of-node n))
-    (sdl:update-display)))
+    (sdl:update-display))))
 
 (defun draw-message-of-node (n)
   (draw-message (text (gethash (message-key n) *message-table*))))

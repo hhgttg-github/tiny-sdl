@@ -26,22 +26,19 @@
   (sdl:with-init ()
     
     (initialize)
-    (initialize-tables)
-    
-    (process-node nil)
+    (global-process *global-states* nil)
     (sdl:update-display)
-
     (sdl:with-events (:poll)
       (:quit-event() t)
-      (:key-down-event
-       (:key key)
-       (process-node key))
- 		       ;; (when (sdl:key= key :sdl-key-escape )
-		       ;; 	 (draw-prompt "Hello, world!")
-		       ;; 	 (sleep 1)
-		       ;; 	 (sdl:push-quit-event)))
+      (:key-down-event (:key key)
+		       (global-process *global-states* key)
+		       (when (sdl:key= key :sdl-key-escape )
+			 (draw-prompt "Hello, world!")
+			 (sdl:update-display)
+			 (sdl:push-quit-event)))
       (:idle ()
-	     (when *quit-game*
-	       (sdl:push-quit-event))
+	     (draw-message-states *global-states*)
+	     (draw-prompt-states *global-states*)
+;	     (draw-field)
 	     (sdl:update-display)))))
 

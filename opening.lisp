@@ -1,130 +1,49 @@
 
-;; (defparameter *stage* nil) ---- 現在のステージ
-;; (defparameter *opening* (make-instance 'opening)) 
-;; (setf *stage* *opening*)
-;; ()
-;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defclass state ()
-  ((scene :initarg :scene :accessor scene)
-   (bind-to :initarg :bind-to :accessor bind-to)))
-
-(defclass scene ()
-  ((message :initarg :message :accessor message)
-   (bind-to :initarg :bind-to :accessor bind-to)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defparameter *state-table* (make-hash-table))
-;(defparameter *store* (make-hash-table))
-(setf (gethash 'store *state-table*) (make-hash-table))
-(defparameter *store* (gethash 'store *state-table*)
-  
-(setf (gethash "退店" *store*)
-      (make-instance 'scene
-		     :message "店を出ます"
-		     :bind-to '((#\press-any-key . 'castle))))
+(defparameter *message-table* (make-hash-table :test #'equal))
 
-(setf (gethash "商品選択" *store*)
-  (make-instance 'scene
-		 :message "どれを買いますか?"
-		 :bind-to
-		 '((#\key-a-z . 3)
-		   (#\key-exit . 2))))
+(setf (gethash "opening" *message-table*) "Start")
 
-(defparameter )
+(defparameter *prompt-table* (make-hash-table :test #'equal))
 
-(setf (gethash "store" *state-table*) *store*)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defparameter *opening*
-  (make-instance 'state
-		 :scene 'opening
-		 :bind-to '((sdl-key-s . 'castle)
-			    (sdl-key-q . 'quit-game)
-			    (sdl-key-escape . 'quit-game))))
-
-(setf *state-list*
-      (cons *opening* *state-list*))
+(setf (gethash "start-quit" *prompt-table*) '("S)tart Q)uit"))
+(setf (gethash "quit-y/n"   *prompt-table*) '("終了しますか?" "Y)es, Quit.  N)o"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defclass stage ()
-  live
-  scene)
+  ((message :accessor message :initarg :message)
+   (prompt  :accessor prompt  :initarg :prompt )))
 
-(defparameter y-or-n 
-  (make-instance 'stage
-		 :live :y-or-n
-		 :scene
-		 '((sdl-key-y) nil)
-		 ((sdl-key-n) nil)))
-		 
+(defclass opening (stage)
+  ())
+
+(defclass opening-quit-yn (stage)
+  ())
+
 (defparameter *opening*
-  (make-instance 'stage
-		 :live :start-or-quit
-		 :scene
-		 '(:start-or-quit
-		   ((sdl-key-s) #'start-game)
-		   ((sdl-key-q sdl-key-escape) #'quit-game))))
+  (make-instance 'opening
+		 :message "opening"
+		 :prompt  "start-quit"))
 
-(defun start-game ()
-  (setf *stage* *castle*)
-  )
+(defparameter *opening-quit-yn*
+  (make-instance 'opening-quit-yn
+		 :message "opening"
+		 :prompt  "quit-yn"))
 
-(defun quit-game ()
-  (sdl:push-quit-event))
+(defgeneric process (state key))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defmethod process(opening key)
+  (switch (key :test #'sdl:key=)
+    (:sdl-key-s)
+    (:sdl-key-q)))
 
-(defparameter *castle*
-  (make-instance 'stage
-		 :current :hall
-		 :scene-list
-		 '(:hall
-		   ((sdl-key-s) #'go-store)
-		   ((sdl-key-m) #'go-maze)
-		   ((sdl-key-q) #'quit-game))))
-
-(defparameter *store*
-  (make-instance 'stage
-		 :current :select-item
-		 :scene-list
-		 '((:select-item
-		    ((sdl-key-s) #'select-item))
-		   (:leave-store
-		    ((sdl-key-y #'go-hall)
-		     (t :select-item)))
-		   ((sdl-key-p) #'purchase-item)
-		   ((sdl-key-c) #'go-hall))))
-		   
-
-
-(defparameter *stage* *opening*)
-
-(defmethod process-stage (opening key)
-   )
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod draw-stage (opening)
-  (clear-message-box)
-  (let ((s "*** Welcome Message ***"))
-    (draw-message-* (center-str s +message-width+)
-		    (ash +message-height+ -1)
-		    s))
-  (clear-prompt-box)
-  (let ((p "S)tart Game" "Q)uit Game"))
-    (draw-prompt p)))
- 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun start-game ())
-(defun quit-game ())
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defmethod process-stage (opening key)
-  (draw-stage )
-  ()
-  )
+(defmethod process(opening-quit-yn key)
+  (switch (key :test #'sdl:key=)
+    (:sdl-key-y)
+    (:sdl-key-n)
+    (t)))

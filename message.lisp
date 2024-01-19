@@ -12,6 +12,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun draw-message-states (s)
+  (let ((m (gethash (message s) *message-table*)))
+    (if (stringp m)
+	(draw-message m)
+	(funcall m))))
+
+(defun draw-prompt-states (s)
+  (let ((p (gethash (prompt s) *prompt-table*)))
+    (if (listp p)
+	(draw-prompt p)
+	(funcall p))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun clear-prompt-box ()
   (clear-string-box (car +prompt-TL+)
 		    (cadr +prompt-TL+)
